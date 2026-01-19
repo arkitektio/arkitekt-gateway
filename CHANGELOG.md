@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.2.0 (2026-01-19)
+
+### Features
+
+- Add status path
+  ([`bafeccd`](https://github.com/arkitektio/arkitekt-gateway/commit/bafeccd197eb16feec13b7e2b65e96ef97523e67))
+
+
 ## v1.1.2 (2026-01-19)
 
 
