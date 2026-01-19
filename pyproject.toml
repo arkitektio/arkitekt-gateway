@@ -42,6 +42,7 @@ path = "hatch_build.py"
 
 [tool.hatch.build.targets.wheel]
 artifacts = ["arkitekt_gateway/bin/*"]
+pure-python = false
 
 [tool.hatch.build.targets.sdist]
 artifacts = ["arkitekt_gateway/bin/*"]
