@@ -1,12 +1,18 @@
 # CHANGELOG
 
 
+## v1.1.2 (2026-01-19)
+
+
 ## v1.1.1 (2026-01-19)
 
 ### Bug Fixes
 
 - Add some tests
   ([`eae3511`](https://github.com/arkitektio/arkitekt-gateway/commit/eae3511fc085641f099e8285dea2fc808780d8c5))
+
+- Update to next sidecar
+  ([`73545a8`](https://github.com/arkitektio/arkitekt-gateway/commit/73545a837294dc8fe310a72c82d19d61b905c617))
 
 
 ## v1.1.0 (2026-01-19)
