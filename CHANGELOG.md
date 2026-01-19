@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.2.1 (2026-01-19)
+
+### Bug Fixes
+
+- Add newest build with verbose loggin
+  ([`2ece585`](https://github.com/arkitektio/arkitekt-gateway/commit/2ece585f9c137636fe78ec9735ed72a07b6d03fa))
+
+
 ## v1.2.0 (2026-01-19)
 
 ### Features
