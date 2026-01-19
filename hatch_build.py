@@ -76,6 +76,7 @@ class CustomBuildHook(BuildHookInterface):
 
         # 4. Set the wheel tag to be platform-specific
         # This ensures the wheel is marked as non-pure Python
+        # TODO: figure out how to set this properly
         build_data["tag"] = f"py3-none-{plat_tag}"
         build_data["pure_python"] = False
         print(f"📦  Wheel tag set to: py3-none-{plat_tag}")
