@@ -49,7 +49,7 @@ class CustomBuildHook(BuildHookInterface):
 
         # 2. Prepare Destination
         # IMPORTANT: We place it inside the package so it's importable
-        dest_dir = os.path.join(self.root, "src", "arkitekt_gateway", "bin")
+        dest_dir = os.path.join(self.root, "arkitekt_gateway", "bin")
         os.makedirs(dest_dir, exist_ok=True)
 
         dest_path = os.path.join(dest_dir, f"arkitekt-sidecar{ext}")
