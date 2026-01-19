@@ -5,7 +5,7 @@ import urllib.request
 import platform
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
-SIDECAR_VERSION = "v0.0.4"
+SIDECAR_VERSION = "v0.0.5"
 
 
 class CustomBuildHook(BuildHookInterface):

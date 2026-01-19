@@ -64,10 +64,16 @@ async def main():
     )
     
     async with Sidecar(config) as sidecar:
-        print(f"Sidecar running with PID: {sidecar.pid}")
+        # Wait for the proxy to be ready
+        proxy_url = await sidecar.wait_ready()
+        print(f"Proxy ready at: {proxy_url}")
         
-        # Wait for it to run (or do other work)
-        await asyncio.sleep(10)
+        # Get status and peer info
+        status = await sidecar.get_status()
+        print(f"Connected peers: {len(status.peers)}")
+        
+        # Keep running...
+        await asyncio.sleep(60)
     
     # Sidecar is automatically stopped when exiting the context
 
@@ -155,6 +161,9 @@ Configuration dataclass for the sidecar process.
 | `hostname` | `str` | `"ts-proxy"` | Hostname in the Tailnet |
 | `port` | `str` | `"8080"` | Port to listen on |
 | `statedir` | `str` | `""` | State directory for Tailscale data |
+| `mode` | `ProxyMode` | `ProxyMode.HTTP` | Proxy mode (`HTTP` or `SOCKS5`) |
+| `statusport` | `str` | `"9090"` | Port for the status API |
+| `verbose` | `bool` | `False` | Enable verbose logging |
 
 ### `Sidecar`
 
@@ -175,6 +184,10 @@ Async wrapper for the Go sidecar binary.
 | `await start()` | Start the sidecar process |
 | `await stop(timeout=5.0)` | Stop the sidecar gracefully (SIGTERM, then SIGKILL) |
 | `await wait()` | Wait for the sidecar to exit |
+| `await wait_ready(timeout=30.0)` | Wait for the sidecar to emit READY signal, returns proxy URL |
+| `await wait_for_signal(signal, timeout)` | Wait for a specific IPC signal |
+| `await get_status()` | Get status from the status API (peers, connection info) |
+| `await health_check()` | Check if the status API is healthy |
 | `await interrupt()` | Send SIGINT to the sidecar |
 | `await send_signal(sig)` | Send any signal to the sidecar |
 | `async for log in logs()` | Async iterator for log lines |
@@ -188,6 +201,32 @@ Represents a log line from the sidecar.
 |-------|------|-------------|
 | `stream` | `str` | Either `"stdout"` or `"stderr"` |
 | `line` | `str` | The log message |
+| `event` | `SidecarEvent \| None` | Parsed IPC signal if present |
+
+### `SidecarSignal`
+
+IPC signals emitted by the sidecar.
+
+| Signal | Description |
+|--------|-------------|
+| `STARTING` | Sidecar is initializing |
+| `CONNECTING` | Connecting to Tailnet |
+| `CONNECTED` | Successfully connected (includes IPs) |
+| `LISTENING` | Proxy is listening |
+| `READY` | Fully ready to accept connections |
+| `ERROR` | An error occurred |
+| `SHUTDOWN` | Graceful shutdown |
+| `AUTH_REQUIRED` | Authentication required |
+
+### `SidecarStatus`
+
+Status information from the status API.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `self_info` | `SelfInfo` | Information about this node |
+| `peers` | `list[PeerInfo]` | List of peers in the Tailnet |
+| `backend_state` | `str` | Backend state (e.g., "Running") |
 
 ## Development
 

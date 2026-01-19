@@ -71,6 +71,7 @@ class SidecarConfig:
     statedir: str = ""
     mode: ProxyMode = field(default=ProxyMode.HTTP)
     statusport: str = "9090"  # If set, enables the status API
+    verbose: bool = False  # If True, enables verbose logging
 
 
 @dataclass
@@ -190,6 +191,8 @@ class Sidecar:
             args.extend(["-mode", self.config.mode.value])
         if self.config.statusport:
             args.extend(["-statusport", self.config.statusport])
+        if self.config.verbose:
+            args.append("-verbose")
 
         return args
 

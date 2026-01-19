@@ -7,7 +7,7 @@ import urllib.request
 import platform
 
 
-sidecar_version = "v0.0.4"
+sidecar_version = "v0.0.5"
 
 
 def download_sidecar():

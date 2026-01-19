@@ -28,7 +28,8 @@ class TestSidecarConfig:
         assert config.port == "8080"
         assert config.statedir == ""
         assert config.mode == ProxyMode.HTTP
-        assert config.statusport == ""
+        assert config.statusport == "9090"
+        assert config.verbose is False
 
     def test_config_custom_values(self):
         config = SidecarConfig(
@@ -39,12 +40,14 @@ class TestSidecarConfig:
             statedir="/tmp/state",
             mode=ProxyMode.SOCKS5,
             statusport="9091",
+            verbose=True,
         )
         assert config.hostname == "my-host"
         assert config.port == "9090"
         assert config.statedir == "/tmp/state"
         assert config.mode == ProxyMode.SOCKS5
         assert config.statusport == "9091"
+        assert config.verbose is True
 
 
 class TestLogLine:
@@ -345,7 +348,9 @@ class TestSidecar:
 
     @pytest.mark.asyncio
     async def test_get_status_without_statusport_raises(self):
-        config = SidecarConfig(authkey="key", coordserver="https://example.com")
+        config = SidecarConfig(
+            authkey="key", coordserver="https://example.com", statusport=""
+        )
         sidecar = Sidecar(config)
 
         with pytest.raises(RuntimeError, match="statusport not configured"):
@@ -353,7 +358,9 @@ class TestSidecar:
 
     @pytest.mark.asyncio
     async def test_health_check_without_statusport_raises(self):
-        config = SidecarConfig(authkey="key", coordserver="https://example.com")
+        config = SidecarConfig(
+            authkey="key", coordserver="https://example.com", statusport=""
+        )
         sidecar = Sidecar(config)
 
         with pytest.raises(RuntimeError, match="statusport not configured"):
