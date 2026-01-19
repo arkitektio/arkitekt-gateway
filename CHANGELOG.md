@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.3.0 (2026-01-19)
+
+
 ## v0.2.3 (2026-01-19)
+
+### Features
+
+- Does this work?
+  ([`c5ae6be`](https://github.com/arkitektio/arkitekt-gateway/commit/c5ae6bec4144363c8e430c8186fc1ce3855d96e3))
 
 
 ## v0.2.2 (2026-01-19)
