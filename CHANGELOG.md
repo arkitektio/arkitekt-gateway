@@ -1,6 +1,9 @@
 # CHANGELOG
 
 
+## v0.2.0 (2026-01-19)
+
+
 ## v0.1.0 (2026-01-19)
 
 ### Bug Fixes
@@ -18,3 +21,6 @@
 
 - Test
   ([`9a5336b`](https://github.com/arkitektio/arkitekt-gateway/commit/9a5336bcc1ea64863ee53744fa938e0d2f42cb80))
+
+- Try to fix shit
+  ([`6368ef6`](https://github.com/arkitektio/arkitekt-gateway/commit/6368ef6cfe0a72f364420e954854aeb6673f2d5c))
