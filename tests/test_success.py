@@ -1,4 +1,4 @@
-from pytest
+import pytest
 
 
 def test_success():
