@@ -2,10 +2,12 @@ import sys
 import asyncio
 import importlib.resources
 import signal
+import re
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional, Callable, Awaitable
 from collections.abc import AsyncIterator
+from enum import Enum
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,6 +20,46 @@ def get_binary_path() -> str:
     return str(traversable)
 
 
+class SidecarSignal(Enum):
+    """IPC signals emitted by the sidecar."""
+
+    STARTING = "STARTING"
+    CONNECTING = "CONNECTING"
+    CONNECTED = "CONNECTED"
+    LISTENING = "LISTENING"
+    READY = "READY"
+    ERROR = "ERROR"
+    SHUTDOWN = "SHUTDOWN"
+    AUTH_REQUIRED = "AUTH_REQUIRED"
+
+
+@dataclass
+class SidecarEvent:
+    """Represents a parsed IPC signal from the sidecar."""
+
+    signal: SidecarSignal
+    data: str  # The data portion after the signal name
+
+    @classmethod
+    def parse(cls, line: str) -> Optional["SidecarEvent"]:
+        """Parse an IPC signal from a log line. Returns None if not a signal."""
+        match = re.match(r"@@SIDECAR:(\w+)@@\s*(.*)", line)
+        if not match:
+            return None
+        try:
+            sig = SidecarSignal(match.group(1))
+            return cls(signal=sig, data=match.group(2).strip())
+        except ValueError:
+            return None
+
+
+class ProxyMode(Enum):
+    """Proxy mode for the sidecar."""
+
+    HTTP = "http"
+    SOCKS5 = "socks5"
+
+
 @dataclass
 class SidecarConfig:
     """Configuration for the sidecar process."""
@@ -27,6 +69,44 @@ class SidecarConfig:
     hostname: str = "ts-proxy"
     port: str = "8080"
     statedir: str = ""
+    mode: ProxyMode = field(default=ProxyMode.HTTP)
+    statusport: str = "9090"  # If set, enables the status API
+
+
+@dataclass
+class PeerInfo:
+    """Information about a peer in the Tailnet."""
+
+    name: str
+    hostname: str
+    tailscale_ips: list[str]
+    online: bool
+    direct: bool
+    relayed_via: str
+    current_address: str
+    rx_bytes: int
+    tx_bytes: int
+    last_seen: Optional[str]
+    last_handshake: Optional[str]
+
+
+@dataclass
+class SelfInfo:
+    """Information about the sidecar's own node."""
+
+    name: str
+    hostname: str
+    tailscale_ips: list[str]
+    online: bool
+
+
+@dataclass
+class SidecarStatus:
+    """Status information from the sidecar's status API."""
+
+    self_info: SelfInfo
+    peers: list[PeerInfo]
+    backend_state: str
 
 
 @dataclass
@@ -35,6 +115,24 @@ class LogLine:
 
     stream: str  # "stdout" or "stderr"
     line: str
+    event: Optional[SidecarEvent] = None
+
+    def __post_init__(self):
+        """Parse event from line if present."""
+        if self.event is None:
+            self.event = SidecarEvent.parse(self.line)
+
+
+class SidecarError(Exception):
+    """Error from the sidecar process."""
+
+    pass
+
+
+class SidecarTimeoutError(SidecarError):
+    """Timeout waiting for sidecar to become ready."""
+
+    pass
 
 
 class Sidecar:
@@ -88,6 +186,10 @@ class Sidecar:
             args.extend(["-port", self.config.port])
         if self.config.statedir:
             args.extend(["-statedir", self.config.statedir])
+        if self.config.mode:
+            args.extend(["-mode", self.config.mode.value])
+        if self.config.statusport:
+            args.extend(["-statusport", self.config.statusport])
 
         return args
 
@@ -224,6 +326,151 @@ class Sidecar:
     def on_log(self, callback: Callable[[LogLine], Awaitable[None]]) -> None:
         """Register a callback to be called for each log line."""
         self._log_callbacks.append(callback)
+
+    async def wait_for_signal(
+        self, target_signal: SidecarSignal, timeout: float = 30.0
+    ) -> SidecarEvent:
+        """
+        Wait for a specific IPC signal from the sidecar.
+
+        Args:
+            target_signal: The signal to wait for (e.g., SidecarSignal.READY)
+            timeout: Maximum time to wait in seconds
+
+        Returns:
+            The SidecarEvent when the signal is received
+
+        Raises:
+            SidecarTimeoutError: If the timeout expires before the signal is received
+            SidecarError: If an ERROR signal is received while waiting
+        """
+        if not self._running:
+            raise RuntimeError("Sidecar is not running")
+
+        event_received: asyncio.Future[SidecarEvent] = asyncio.Future()
+
+        async def signal_callback(log: LogLine):
+            if log.event:
+                if log.event.signal == SidecarSignal.ERROR:
+                    if not event_received.done():
+                        event_received.set_exception(
+                            SidecarError(f"Sidecar error: {log.event.data}")
+                        )
+                elif log.event.signal == target_signal:
+                    if not event_received.done():
+                        event_received.set_result(log.event)
+
+        self._log_callbacks.append(signal_callback)
+        try:
+            return await asyncio.wait_for(event_received, timeout=timeout)
+        except asyncio.TimeoutError:
+            raise SidecarTimeoutError(
+                f"Timeout waiting for {target_signal.value} signal after {timeout}s"
+            )
+        finally:
+            self._log_callbacks.remove(signal_callback)
+
+    async def wait_ready(self, timeout: float = 30.0) -> str:
+        """
+        Wait for the sidecar to become ready.
+
+        Returns:
+            The proxy URL (e.g., "http://127.0.0.1:8080")
+
+        Raises:
+            SidecarTimeoutError: If the timeout expires
+            SidecarError: If an error occurs during startup
+        """
+        event = await self.wait_for_signal(SidecarSignal.READY, timeout=timeout)
+        return event.data
+
+    async def get_status(self) -> SidecarStatus:
+        """
+        Get the current status from the sidecar's status API.
+
+        Requires statusport to be configured.
+
+        Returns:
+            SidecarStatus with self info, peers, and backend state
+
+        Raises:
+            RuntimeError: If statusport is not configured
+            SidecarError: If the status API request fails
+        """
+        if not self.config.statusport:
+            raise RuntimeError("Status API not available - statusport not configured")
+
+        import aiohttp
+
+        url = f"http://127.0.0.1:{self.config.statusport}/status"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    url, timeout=aiohttp.ClientTimeout(total=5)
+                ) as resp:
+                    if resp.status != 200:
+                        raise SidecarError(f"Status API returned {resp.status}")
+                    data = await resp.json()
+        except aiohttp.ClientError as e:
+            raise SidecarError(f"Failed to fetch status: {e}")
+
+        # Parse self info
+        self_data = data.get("self", {})
+        self_info = SelfInfo(
+            name=self_data.get("name", ""),
+            hostname=self_data.get("hostname", ""),
+            tailscale_ips=self_data.get("tailscale_ips", []),
+            online=self_data.get("online", False),
+        )
+
+        # Parse peers
+        peers = []
+        for peer_data in data.get("peers", []):
+            peers.append(
+                PeerInfo(
+                    name=peer_data.get("name", ""),
+                    hostname=peer_data.get("hostname", ""),
+                    tailscale_ips=peer_data.get("tailscale_ips", []),
+                    online=peer_data.get("online", False),
+                    direct=peer_data.get("direct", False),
+                    relayed_via=peer_data.get("relayed_via", ""),
+                    current_address=peer_data.get("current_address", ""),
+                    rx_bytes=peer_data.get("rx_bytes", 0),
+                    tx_bytes=peer_data.get("tx_bytes", 0),
+                    last_seen=peer_data.get("last_seen"),
+                    last_handshake=peer_data.get("last_handshake"),
+                )
+            )
+
+        return SidecarStatus(
+            self_info=self_info,
+            peers=peers,
+            backend_state=data.get("backend_state", ""),
+        )
+
+    async def health_check(self) -> bool:
+        """
+        Check if the sidecar's status API is healthy.
+
+        Requires statusport to be configured.
+
+        Returns:
+            True if healthy, False otherwise
+        """
+        if not self.config.statusport:
+            raise RuntimeError("Health check not available - statusport not configured")
+
+        import aiohttp
+
+        url = f"http://127.0.0.1:{self.config.statusport}/health"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    url, timeout=aiohttp.ClientTimeout(total=5)
+                ) as resp:
+                    return resp.status == 200
+        except aiohttp.ClientError:
+            return False
 
     async def __aenter__(self) -> "Sidecar":
         """Context manager entry - starts the sidecar."""

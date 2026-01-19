@@ -148,9 +148,10 @@ wheels = [
 
 [[package]]
 name = "arkitekt-gateway"
-version = "1.1.0"
+version = "1.1.2"
 source = { editable = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "typer" },
 ]
 
@@ -165,7 +166,10 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "typer", specifier = ">=0.16.0" }]
+requires-dist = [
+    { name = "aiohttp", specifier = ">=3.12.14" },
+    { name = "typer", specifier = ">=0.16.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [

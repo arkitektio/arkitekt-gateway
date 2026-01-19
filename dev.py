@@ -7,6 +7,9 @@ import urllib.request
 import platform
 
 
+sidecar_version = "v0.0.4"
+
+
 def download_sidecar():
     print("🔧 Downloading sidecar binary for local development...")
 
@@ -26,7 +29,7 @@ def download_sidecar():
     arch = "arm64" if machine in ["arm64", "aarch64"] else "amd64"
 
     binary_name = f"arkitekt-sidecar-{os_name}-{arch}{ext}"
-    download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/v0.0.3/{binary_name}"
+    download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/{sidecar_version}/{binary_name}"
 
     # Place in the local package bin folder
     dest_dir = os.path.join(os.path.dirname(__file__), "arkitekt_gateway", "bin")
