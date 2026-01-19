@@ -45,7 +45,7 @@ class CustomBuildHook(BuildHookInterface):
         arch = "arm64" if machine in ["arm64", "aarch64"] else "amd64"
 
         binary_name = f"arkitekt-sidecar-{os_name}-{arch}{ext}"
-        download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/v0.0.2/{binary_name}"
+        download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/v0.0.3/{binary_name}"
 
         # 2. Prepare Destination
         # IMPORTANT: We place it inside the package so it's importable

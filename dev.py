@@ -26,7 +26,7 @@ def download_sidecar():
     arch = "arm64" if machine in ["arm64", "aarch64"] else "amd64"
 
     binary_name = f"arkitekt-sidecar-{os_name}-{arch}{ext}"
-    download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/v0.0.2/{binary_name}"
+    download_url = f"https://github.com/jhnnsrs/arkitekt-sidecar/releases/download/v0.0.3/{binary_name}"
 
     # Place in the local package bin folder
     dest_dir = os.path.join(os.path.dirname(__file__), "arkitekt_gateway", "bin")
