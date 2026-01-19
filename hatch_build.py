@@ -22,7 +22,7 @@ class CustomBuildHook(BuildHookInterface):
         # Example: proxy-helper-linux-amd64
         if system == "windows":
             ext = ".exe"
-            os_name = "win"
+            os_name = "windows"
         elif system == "darwin":
             ext = ""
             os_name = "darwin"
