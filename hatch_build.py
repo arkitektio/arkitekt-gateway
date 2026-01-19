@@ -19,16 +19,27 @@ class CustomBuildHook(BuildHookInterface):
         machine = platform.machine().lower()  # 'amd64', 'x86_64', 'arm64'
 
         # Map to your Go release naming convention
-        # Example: proxy-helper-linux-amd64
         if system == "windows":
             ext = ".exe"
             os_name = "windows"
+            if machine in ["arm64", "aarch64"]:
+                plat_tag = "win_arm64"
+            else:
+                plat_tag = "win_amd64"
         elif system == "darwin":
             ext = ""
             os_name = "darwin"
+            if machine in ["arm64", "aarch64"]:
+                plat_tag = "macosx_11_0_arm64"
+            else:
+                plat_tag = "macosx_10_9_x86_64"
         else:
             ext = ""
             os_name = "linux"
+            if machine in ["arm64", "aarch64"]:
+                plat_tag = "manylinux2014_aarch64"
+            else:
+                plat_tag = "manylinux2014_x86_64"
 
         # Handle Arch (simplistic example)
         arch = "arm64" if machine in ["arm64", "aarch64"] else "amd64"
@@ -62,3 +73,8 @@ class CustomBuildHook(BuildHookInterface):
             # But for a release build, you should probably raise e.
             if os.environ.get("CI"):
                 raise e
+
+        # 4. Set the wheel tag to be platform-specific
+        build_data["tag"] = f"py3-none-{plat_tag}"
+        build_data["pure_python"] = False
+        print(f"📦  Wheel tag set to: py3-none-{plat_tag}")
