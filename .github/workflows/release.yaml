@@ -55,7 +55,14 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Build Wheel
-        run: uv build
+        run: uv build --wheel
+
+     
+      - name: Build Sdist
+        if: matrix.os == 'ubuntu-latest'
+        run: uv build --sdist
+
+      
 
       - uses: actions/upload-artifact@v4
         with:
