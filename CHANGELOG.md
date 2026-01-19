@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.2.1 (2026-01-19)
+
+
 ## v0.2.0 (2026-01-19)
+
+### Bug Fixes
+
+- Make it darwin
+  ([`8011dd5`](https://github.com/arkitektio/arkitekt-gateway/commit/8011dd52804728b57449a03fa33650d5384e962e))
 
 
 ## v0.1.0 (2026-01-19)
