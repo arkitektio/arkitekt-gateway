@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.4.1 (2026-01-19)
+
+### Bug Fixes
+
+- Fix stuff
+  ([`123f959`](https://github.com/arkitektio/arkitekt-gateway/commit/123f9595a199da9573ff76cf3db6522d7382f712))
+
+
 ## v0.4.0 (2026-01-19)
 
 
