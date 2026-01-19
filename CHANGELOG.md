@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.2.3 (2026-01-19)
+
+
 ## v0.2.2 (2026-01-19)
+
+### Bug Fixes
+
+- Try non pure python
+  ([`2ecf7f3`](https://github.com/arkitektio/arkitekt-gateway/commit/2ecf7f367f36345053abd23a199f5477097cab17))
 
 
 ## v0.2.1 (2026-01-19)
