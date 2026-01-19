@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v1.0.0 (2026-01-19)
+
+### Features
+
+- Push with correct
+  ([`c1b0bfe`](https://github.com/arkitektio/arkitekt-gateway/commit/c1b0bfe03439496cf2108273365733e3f84f56c7))
+
+
 ## v0.4.3 (2026-01-19)
 
 ### Bug Fixes
