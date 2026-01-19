@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.4.3 (2026-01-19)
+
+### Bug Fixes
+
+- Bundle the correct sidecar
+  ([`1b93c49`](https://github.com/arkitektio/arkitekt-gateway/commit/1b93c49b0d825872f51bbe36d3515a8d5277ff9b))
+
+
 ## v0.4.2 (2026-01-19)
 
 
