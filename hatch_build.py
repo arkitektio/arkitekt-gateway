@@ -25,7 +25,7 @@ class CustomBuildHook(BuildHookInterface):
             os_name = "win"
         elif system == "darwin":
             ext = ""
-            os_name = "mac"
+            os_name = "darwin"
         else:
             ext = ""
             os_name = "linux"
