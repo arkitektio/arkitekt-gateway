@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.2.2 (2026-01-19)
+
+
 ## v0.2.1 (2026-01-19)
+
+### Bug Fixes
+
+- Use the correct binary for windows
+  ([`e43b968`](https://github.com/arkitektio/arkitekt-gateway/commit/e43b9687fd8ef757483f31f322637ea7493a3fed))
 
 
 ## v0.2.0 (2026-01-19)
