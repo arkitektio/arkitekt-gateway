@@ -1,12 +1,18 @@
 # CHANGELOG
 
 
+## v0.4.2 (2026-01-19)
+
+
 ## v0.4.1 (2026-01-19)
 
 ### Bug Fixes
 
 - Fix stuff
   ([`123f959`](https://github.com/arkitektio/arkitekt-gateway/commit/123f9595a199da9573ff76cf3db6522d7382f712))
+
+- Only build sdist on ubuntu
+  ([`ce3f8dd`](https://github.com/arkitektio/arkitekt-gateway/commit/ce3f8dd016e23551f90390c8d2e308eb79c2a058))
 
 
 ## v0.4.0 (2026-01-19)
