@@ -1,7 +1,15 @@
 # CHANGELOG
 
 
+## v0.4.0 (2026-01-19)
+
+
 ## v0.3.0 (2026-01-19)
+
+### Features
+
+- With currect stuff
+  ([`8160cd2`](https://github.com/arkitektio/arkitekt-gateway/commit/8160cd259b2cd7531bbed6a8bf770ee2b2436f81))
 
 
 ## v0.2.3 (2026-01-19)
