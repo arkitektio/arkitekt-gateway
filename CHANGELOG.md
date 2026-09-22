@@ -1,6 +1,27 @@
 # CHANGELOG
 
 
+## v1.2.2 (2026-09-22)
+
+### Bug Fixes
+
+- Depend on the renamed arkitekt
+  ([`72b24ad`](https://github.com/arkitektio/arkitekt-gateway/commit/72b24adb83f5f3acd6ac7f381d36cbbd9b82a18a))
+
+arkitekt-next was folded back onto the `arkitekt` name. Imports of `arkitekt_next` become
+  `arkitekt`, and the dependency floor moves to `arkitekt>=2` -- the old floors referred to
+  arkitekt-next numbering, which means nothing under the reclaimed name.
+
+### Build System
+
+- **deps**: Move to arkitekt 3 and dokker 2.8
+  ([`9187695`](https://github.com/arkitektio/arkitekt-gateway/commit/918769596c3fc71ebd660b33bfc9e00854f7f8a2))
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
+
+Claude-Session: https://claude.ai/code/session_01QEr4a9XNWRms96tmxUPXmz
+
+
 ## v1.2.1 (2026-01-19)
 
 ### Bug Fixes
