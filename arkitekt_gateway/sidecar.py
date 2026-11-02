@@ -5,7 +5,7 @@ import signal
 import re
 from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Optional, Callable, Awaitable
+from collections.abc import Callable, Awaitable
 from collections.abc import AsyncIterator
 from enum import Enum
 import logging
@@ -41,7 +41,7 @@ class SidecarEvent:
     data: str  # The data portion after the signal name
 
     @classmethod
-    def parse(cls, line: str) -> Optional["SidecarEvent"]:
+    def parse(cls, line: str) -> "SidecarEvent | None":
         """Parse an IPC signal from a log line. Returns None if not a signal."""
         match = re.match(r"@@SIDECAR:(\w+)@@\s*(.*)", line)
         if not match:
@@ -87,8 +87,8 @@ class PeerInfo:
     current_address: str
     rx_bytes: int
     tx_bytes: int
-    last_seen: Optional[str]
-    last_handshake: Optional[str]
+    last_seen: str | None
+    last_handshake: str | None
 
 
 @dataclass
@@ -116,7 +116,7 @@ class LogLine:
 
     stream: str  # "stdout" or "stderr"
     line: str
-    event: Optional[SidecarEvent] = None
+    event: SidecarEvent | None = None
 
     def __post_init__(self):
         """Parse event from line if present."""
@@ -146,12 +146,12 @@ class Sidecar:
 
     def __init__(self, config: SidecarConfig):
         self.config = config
-        self._process: Optional[asyncio.subprocess.Process] = None
-        self._stdout_task: Optional[asyncio.Task] = None
-        self._stderr_task: Optional[asyncio.Task] = None
+        self._process: asyncio.subprocess.Process | None = None
+        self._stdout_task: asyncio.Task | None = None
+        self._stderr_task: asyncio.Task | None = None
         self._log_queue: asyncio.Queue[LogLine] = asyncio.Queue()
         self._running = False
-        self._exit_code: Optional[int] = None
+        self._exit_code: int | None = None
         self._log_callbacks: list[Callable[[LogLine], Awaitable[None]]] = []
 
     @property
@@ -164,12 +164,12 @@ class Sidecar:
         )
 
     @property
-    def pid(self) -> Optional[int]:
+    def pid(self) -> int | None:
         """Get the process ID of the sidecar."""
         return self._process.pid if self._process else None
 
     @property
-    def exit_code(self) -> Optional[int]:
+    def exit_code(self) -> int | None:
         """Get the exit code if the process has terminated."""
         return self._exit_code
 
@@ -266,7 +266,7 @@ class Sidecar:
 
         try:
             await asyncio.wait_for(self._process.wait(), timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Sidecar did not terminate in time, sending SIGKILL")
             try:
                 self._process.kill()
@@ -323,7 +323,7 @@ class Sidecar:
             try:
                 log_line = await asyncio.wait_for(self._log_queue.get(), timeout=0.5)
                 yield log_line
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 continue
 
     def on_log(self, callback: Callable[[LogLine], Awaitable[None]]) -> None:
@@ -366,7 +366,7 @@ class Sidecar:
         self._log_callbacks.append(signal_callback)
         try:
             return await asyncio.wait_for(event_received, timeout=timeout)
-        except asyncio.TimeoutError:
+        except TimeoutError:
             raise SidecarTimeoutError(
                 f"Timeout waiting for {target_signal.value} signal after {timeout}s"
             )
